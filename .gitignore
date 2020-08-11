@@ -1,0 +1,8 @@
+# Ignorar
+.vscode
+*.example
+*.pyc
+*.json
+
+# Não Ignorar
+!processos.json.example
