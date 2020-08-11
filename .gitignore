@@ -3,6 +3,7 @@
 *.example
 *.pyc
 *.json
+*.log
 
 # Não Ignorar
 !processos.json.example
