@@ -55,7 +55,7 @@ class Subscriber(ABC):
     
     @abstractmethod
     def sub(self, msg, topic):
-        print(f'|{self._name}| Recebeu: {msg}, {topic}')
+        print(f'|{self._name}| Recebeu: {msg}, do topico: {topic}')
 
     @property
     def topics(self):
