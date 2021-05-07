@@ -55,7 +55,7 @@ class Subscriber(ABC):
     
     @abstractmethod
     def sub(self, msg, topic):
-        print(self._name, msg, self._topics)
+        print(f'|{self._name}| Recebeu: {msg}, {topic}')
 
     @property
     def topics(self):
@@ -97,27 +97,20 @@ if __name__ == "__main__":
     class Proxy(PubSub):
         def __init__(self):
             super().__init__()
-
         def attach(self, subscriber):
             super().attach(subscriber)
-
         def detach(self, subscriber):
             super().detach(subscriber)
-
         def route(self, msg, topic):
             super().route(msg, topic)
-
     class Server(Publisher):
         def __init__(self, pubsub):
             super().__init__(pubsub)
-
         def pub(self, msg, topics: list):
-                super().pub(msg, topics)
-    
+            super().pub(msg, topics)
     class Client(Subscriber):
         def __init__(self, name, pubsub, topic):
             super().__init__(name, pubsub, topic)
-        
         def sub(self, msg, topics):
             super().sub(msg, topics)
 
@@ -125,8 +118,10 @@ if __name__ == "__main__":
     proxy = Proxy()
 
     server = Server(proxy)
+    server2 = Server(proxy)
 
-    client = Client("William", proxy, ["A"])
+    client = Client("William", proxy, ["A", "B"])
     client2 = Client("Irmao", proxy, ["B"])
 
-    server.pub("Oi", ["A", "B"])
+    server.pub("Oi", ["A"])
+    server2.pub("Oi", ["B"])
