@@ -3,6 +3,14 @@ from typing import Type, List
 
 
 class PubSub(ABC):
+    """
+    Classe faz o registro do inscritos e notifica os inscritos que estao intresados no topic do metodo route
+
+    Usage:
+
+        proxy = PubSub()
+    
+    """
 
     @abstractmethod
     def __init__(self):
@@ -21,33 +29,66 @@ class PubSub(ABC):
     @abstractmethod
     def route(self, msg, topic):
         for subscriber in self._subscribers:
-            if topic in subscriber.topic:
+            if topic in subscriber.topics:
                 subscriber.sub(msg, topic)
 
 class Subscriber(ABC):
+    """
+    Clase de inscrito, é instanciada passando o parametro da Classe PubSub
+    Sempre que um Publisher fizer uma publicar o PubSub notificara o Inscrito que tiver interece no topico
+
+    Usage:
+
+        proxy = PubSub()
+
+        william = Subscriber("William", proxy, ["CARROS", "MODA"])
+
+    """
 
     @abstractmethod
-    def __init__(self, name, pubsub: Type["PubSub"], topic: list):
+    def __init__(self, name, pubsub: Type["PubSub"], topics: list):
         self._name = name
-        if not isinstance(topic, list):
-            raise ValueError(f"Erro: {topic} nao e uma lista")
-        self.topic = topic
+        if not isinstance(topics, list):
+            raise ValueError(f"Erro: {topics} nao e uma lista")
+        self._topics = topics
         pubsub.attach(self)
     
     @abstractmethod
     def sub(self, msg, topic):
-        print(self._name, msg, self.topic)
+        print(self._name, msg, self._topics)
+
+    @property
+    def topics(self):
+        return self._topics
 
 
 class Publisher(ABC):
+    """
+    Classe responsavel por publicar eventos, quando um evento é publicado o metodo pub notifica a Class
+    PubSub e a classe envia a msg para os inscritos interesados no topicos do metodo pub
+
+    Usage:
+
+        proxy = PubSub()
+
+        william = Subscriber("William", proxy, ["CARROS", "MODA"])
+
+        blog = Publisher(proxy)
+
+        blog.pub("Fashion Week Dia 15",["MODA"])
+
+    """
 
     @abstractmethod
     def __init__(self, pubsub: Type["PubSub"]):
         self._pubsub = pubsub
 
     @abstractmethod
-    def pub(self, msg, topic):
-        self._pubsub.route(msg, topic)
+    def pub(self, msg: str, topics: list):
+        if not isinstance(topics, list):
+            raise ValueError(f"Erro: {topics} nao e uma lista")
+        for topic in topics:
+            self._pubsub.route(msg, topic)
 
 
 
@@ -70,15 +111,15 @@ if __name__ == "__main__":
         def __init__(self, pubsub):
             super().__init__(pubsub)
 
-        def pub(self, msg, topic):
-            super().pub(msg, topic)
+        def pub(self, msg, topics: list):
+                super().pub(msg, topics)
     
     class Client(Subscriber):
         def __init__(self, name, pubsub, topic):
             super().__init__(name, pubsub, topic)
         
-        def sub(self, msg, topic):
-            super().sub(msg, topic)
+        def sub(self, msg, topics):
+            super().sub(msg, topics)
 
 
     proxy = Proxy()
@@ -86,5 +127,6 @@ if __name__ == "__main__":
     server = Server(proxy)
 
     client = Client("William", proxy, ["A"])
+    client2 = Client("Irmao", proxy, ["B"])
 
-    server.pub("Oi", "A")
+    server.pub("Oi", ["A", "B"])
