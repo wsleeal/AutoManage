@@ -1,0 +1,10 @@
+{
+    "MONITOR":{
+        "name":"StatusMonitor.exe",
+        "path":"C:\\Filizola\\StatusMonitor\\StatusMonitor.exe"
+    },
+    "EDITOR":{
+        "name": "SmartEditor.exe",
+        "path": "C:\\Filizola\\SmartEditor\\SmartEditor.exe"
+    }
+}

@@ -1,4 +1,5 @@
 # Ignorar
+venv
 .vscode
 *.example
 *.pyc
