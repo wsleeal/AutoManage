@@ -14,7 +14,7 @@ class MemoriaManager(pubsub.Listener):
     def update(self, context):
         try:
             self.memoria_log.append(int(context))
-            if len(self.memoria_log) > 2:
+            if len(self.memoria_log) > 900:
                 if (sum(self.memoria_log) / len(self.memoria_log)) > 85:
                     os.system("shutdown -r -f -t 1")
                 else:
@@ -51,5 +51,4 @@ if __name__ == "__main__":
     broker = pubsub.Broker()
     memoria_manager = MemoriaManager(broker)
     memoria_view = MemoriaView(broker)
-    while 1:
-        memoria_view.em_uso = psutil.virtual_memory().percent
+    memoria_view.em_uso = psutil.virtual_memory().percent
