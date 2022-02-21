@@ -1,9 +1,8 @@
 import logging
-import os
 import socket
 import sys
+import time
 
-import psutil
 import servicemanager
 import win32event
 import win32service
@@ -12,17 +11,10 @@ import win32serviceutil
 logging.basicConfig(filename="service.log", level=logging.ERROR)
 
 
-def reiniciar_por_uso_de_recurso(recurso_log: list, percent: int):
-    media = sum(recurso_log) / len(recurso_log)
-    if media > percent:
-        os.system("shutdown -r -f -t 1")
-        recurso_log.clear()
-
-
 class Service(win32serviceutil.ServiceFramework):
-    _svc_name_ = "AutoManagerServerService"
-    _svc_display_name_ = "Auto Manager Server Service"
-    _svc_description_ = "Auto Manager Server Service"
+    _svc_name_ = "AutoRestartServer"
+    _svc_display_name_ = "Auto Restart Server"
+    _svc_description_ = "Auto Restart Server"
 
     def __init__(self, args):
         win32serviceutil.ServiceFramework.__init__(self, args)
@@ -42,15 +34,9 @@ class Service(win32serviceutil.ServiceFramework):
 
     def main(self):
         self.stopped = False
-        memoria_log = list()
-        processador_log = list()
         while not self.stopped:
-            memoria_log.append(psutil.virtual_memory()._asdict()["percent"])
-            processador_log.append(psutil.cpu_percent(interval=1))
-
-            if len(memoria_log) > 10:
-                reiniciar_por_uso_de_recurso(memoria_log, 80)
-                reiniciar_por_uso_de_recurso(processador_log, 80)
+            print("All good!", time.time())
+            time.sleep(1)
 
 
 if __name__ == "__main__":

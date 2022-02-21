@@ -1,5 +1,7 @@
 # Ignorar
 venv
+build
+dist
 .vscode
 *.example
 *.pyc
