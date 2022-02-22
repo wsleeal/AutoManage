@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 
@@ -6,37 +7,68 @@ import psutil
 import pubsub
 
 
-class MemoriaManager(pubsub.Listener):
+def get_config():
+    try:
+        with open("configs.json", "r") as f:
+            return json.loads(f.read())
+    except:
+        with open("configs.json", "w") as f:
+            dados = dict()
+            dados["debug"] = True
+            dados["restart_now"] = False
+            dados["time_test"] = 36000
+            dados["percent_test"] = 100
+            json.dump(dados, f, indent=4)
+            return dados
+
+
+class MemoriaListener(pubsub.Listener):
     def __init__(self, broker: "pubsub.Broker") -> None:
-        super().__init__("memoria_view", broker)
+        super().__init__("memoria_porcet", broker)
         self.memoria_log = list()
 
     def update(self, context):
-        try:
-            self.memoria_log.append(int(context))
-            if len(self.memoria_log) > 900:
-                if (sum(self.memoria_log) / len(self.memoria_log)) > 85:
+        config = get_config()
+        if not isinstance(context, psutil._pswindows.svmem):
+            return logging.error("MemoriaManager: Contexto Invalido")
+
+        self.memoria_log.append(context.percent)
+        log_length = len(self.memoria_log)
+        logging.debug(f"MemoriaManager: {log_length}/{config['time_test']}")
+        if log_length > config["time_test"]:
+            if (sum(self.memoria_log) / log_length) > config["percent_test"]:
+                if not config["debug"]:
                     os.system("shutdown -r -f -t 1")
                 else:
-                    self.memoria_log.clear()
-        except:
-            raise logging.exception("")
+                    logging.debug("MemoriaManager: Reiniciou")
+            self.memoria_log.clear()
 
 
-class MemoriaView(pubsub.Event):
-    _em_uso = None
+class Events(pubsub.Event):
+    _memoria_porcent = None
 
     def __init__(self, broker: "pubsub.Broker") -> None:
-        super().__init__("memoria_view", broker)
+        super().__init__(broker)
 
     @property
-    def em_uso(self):
-        return self._em_uso
+    def memoria_porcent(self):
+        return self._memoria_porcent
 
-    @em_uso.setter
-    def em_uso(self, valor):
-        self._em_uso = valor
-        self.notify(valor)
+    @memoria_porcent.setter
+    def memoria_porcent(self, valor):
+        self._memoria_porcent = valor
+        self.notify("memoria_porcet", valor)
+
+    def check_restart(self):
+        config = get_config()
+        if config["restart_now"] == True:
+            with open("configs.json", "r+") as f:
+                config["restart_now"] = False
+                json.dump(config, f, indent=4)
+                if not config["debug"]:
+                    os.system("shutdown -r -f -t 1")
+                else:
+                    logging.debug("check_restart: Restarted")
 
 
 if __name__ == "__main__":
@@ -44,11 +76,13 @@ if __name__ == "__main__":
     ch.setLevel(logging.DEBUG)
     fh = logging.FileHandler("console.log")
     fh.setLevel(logging.ERROR)
-    formatter = "%(asctime)s %(levelname)s: %(message)s"
+    formatter = "[%(asctime)s file:%(name)s line:%(lineno)s]%(levelname)s: %(message)s"
     datefmt = "%m/%d/%Y %H:%M:%S"
     logging.basicConfig(handlers=(ch, fh), datefmt=datefmt, format=formatter, level=logging.DEBUG)
 
     broker = pubsub.Broker()
-    memoria_manager = MemoriaManager(broker)
-    memoria_view = MemoriaView(broker)
-    memoria_view.em_uso = psutil.virtual_memory().percent
+    memoria_manager = MemoriaListener(broker)
+    eventos = Events(broker)
+
+    eventos.memoria_porcent = psutil.virtual_memory()
+    eventos.check_restart()

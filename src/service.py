@@ -3,12 +3,22 @@ import socket
 import sys
 import time
 
+import psutil
 import servicemanager
 import win32event
 import win32service
 import win32serviceutil
 
-logging.basicConfig(filename="service.log", level=logging.ERROR)
+import main
+import pubsub
+
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+fh = logging.FileHandler("console.log")
+fh.setLevel(logging.ERROR)
+formatter = "[%(asctime)s file:%(name)s line:%(lineno)s]%(levelname)s: %(message)s"
+datefmt = "%m/%d/%Y %H:%M:%S"
+logging.basicConfig(handlers=(ch, fh), datefmt=datefmt, format=formatter, level=logging.DEBUG)
 
 
 class Service(win32serviceutil.ServiceFramework):
@@ -34,8 +44,12 @@ class Service(win32serviceutil.ServiceFramework):
 
     def main(self):
         self.stopped = False
+        broker = pubsub.Broker()
+        main.MemoriaListener(broker)
+        eventos = main.Events(broker)
         while not self.stopped:
-            print("All good!", time.time())
+            eventos.memoria_porcent = psutil.virtual_memory()
+            eventos.check_restart()
             time.sleep(1)
 
 

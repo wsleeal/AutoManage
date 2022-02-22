@@ -15,12 +15,11 @@ class Broker:
 
 
 class Event:
-    def __init__(self, topic: str, broker: "Broker") -> None:
+    def __init__(self, broker: "Broker") -> None:
         self.broker = broker
-        self.topic = topic
 
-    def notify(self, context):
-        self.broker.router(self.topic, context)
+    def notify(self, topic: str, context):
+        self.broker.router(topic, context)
 
 
 class Listener:
@@ -37,5 +36,5 @@ if __name__ == "__main__":
 
     __listener = Listener("Teste", __broker)
 
-    __event = Event("Teste", __broker)
-    __event.notify("Oi")
+    __event = Event(__broker)
+    __event.notify("Teste", "Oi")
