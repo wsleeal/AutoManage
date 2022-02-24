@@ -1,3 +1,4 @@
+import datetime
 import json
 import logging
 import os
@@ -66,15 +67,16 @@ class Events(pubsub.Event):
 
     def check_restart(self):
         config = get_config()
-        if config["restart_now"] == True:
-            with open(config["config_path"], "r+") as f:
+        with open(config["config_path"], "r+") as f:
+            if config["restart_now"] == True:
                 config["restart_now"] = False
-                json.dump(config, f, indent=4)
                 if not config["debug"]:
                     logging.info("check_restart: Computador Reiniciado")
                     os.system("shutdown -r -f -t 1")
                 else:
                     logging.debug("check_restart: Restarted")
+            config["last_check"] = str(datetime.datetime.now())
+            json.dump(config, f, indent=4)
 
 
 if __name__ == "__main__":

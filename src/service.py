@@ -36,14 +36,17 @@ class Service(win32serviceutil.ServiceFramework):
         win32event.SetEvent(self.hWaitStop)
 
     def main(self):
-        self.stopped = False
-        broker = pubsub.Broker()
-        main.MemoriaListener(broker)
-        eventos = main.Events(broker)
-        while not self.stopped:
-            eventos.memoria_status = psutil.virtual_memory()
-            eventos.check_restart()
-            time.sleep(1)
+        try:
+            self.stopped = False
+            broker = pubsub.Broker()
+            main.MemoriaListener(broker)
+            eventos = main.Events(broker)
+            while not self.stopped:
+                eventos.memoria_status = psutil.virtual_memory()
+                eventos.check_restart()
+                time.sleep(1)
+        except:
+            raise logging.exception("")
 
 
 if __name__ == "__main__":
@@ -55,12 +58,10 @@ if __name__ == "__main__":
     datefmt = "%m/%d/%Y %H:%M:%S"
     logging.basicConfig(handlers=(ch, fh), datefmt=datefmt, format=formatter, level=logging.DEBUG)
 
-    try:
-        if len(sys.argv) == 1:
-            servicemanager.Initialize()
-            servicemanager.PrepareToHostSingle(Service)
-            servicemanager.StartServiceCtrlDispatcher()
-        else:
-            win32serviceutil.HandleCommandLine(Service)
-    except:
-        raise logging.exception("")
+    logging.info("Servico Iniciado")
+    if len(sys.argv) == 1:
+        servicemanager.Initialize()
+        servicemanager.PrepareToHostSingle(Service)
+        servicemanager.StartServiceCtrlDispatcher()
+    else:
+        win32serviceutil.HandleCommandLine(Service)
