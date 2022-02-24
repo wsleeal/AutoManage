@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from pathlib import Path
 
 import psutil
 
@@ -8,10 +9,11 @@ import pubsub
 
 
 def get_config():
-    try:
-        with open("configs.json", "r") as f:
+    configs = Path(Path(__file__).parent, "configs.json")
+    if not configs.exists():
+        with open(configs, "r") as f:
             return json.loads(f.read())
-    except:
+    else:
         with open("configs.json", "w") as f:
             dados = dict()
             dados["debug"] = True
