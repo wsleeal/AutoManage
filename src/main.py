@@ -20,6 +20,7 @@ def get_config():
             dados["restart_now"] = False
             dados["time_test"] = 36000
             dados["percent_test"] = 100
+            dados["config_path"] = str(configs)
             json.dump(dados, f, indent=4)
             return dados
 
