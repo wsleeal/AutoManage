@@ -10,11 +10,11 @@ import pubsub
 
 def get_config():
     configs = Path(Path(__file__).parent, "configs.json")
-    if not configs.exists():
+    if configs.exists():
         with open(configs, "r") as f:
             return json.loads(f.read())
     else:
-        with open("configs.json", "w") as f:
+        with open(configs, "w") as f:
             dados = dict()
             dados["debug"] = True
             dados["restart_now"] = False
