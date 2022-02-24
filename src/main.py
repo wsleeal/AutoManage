@@ -78,7 +78,7 @@ if __name__ == "__main__":
     fh.setLevel(logging.ERROR)
     formatter = "[%(asctime)s file:%(name)s line:%(lineno)s]%(levelname)s: %(message)s"
     datefmt = "%m/%d/%Y %H:%M:%S"
-    logging.basicConfig(handlers=(ch, fh), datefmt=datefmt, format=formatter, level=logging.DEBUG)
+    logging.basicConfig(handlers=(ch, fh), datefmt=datefmt, format=formatter, level=logging.INFO)
 
     broker = pubsub.Broker()
     memoria_manager = MemoriaListener(broker)

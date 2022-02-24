@@ -12,14 +12,6 @@ import win32serviceutil
 import main
 import pubsub
 
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-fh = logging.FileHandler("console.log")
-fh.setLevel(logging.ERROR)
-formatter = "[%(asctime)s file:%(name)s line:%(lineno)s]%(levelname)s: %(message)s"
-datefmt = "%m/%d/%Y %H:%M:%S"
-logging.basicConfig(handlers=(ch, fh), datefmt=datefmt, format=formatter, level=logging.DEBUG)
-
 
 class Service(win32serviceutil.ServiceFramework):
     _svc_name_ = "AutoRestartServer"
@@ -54,6 +46,14 @@ class Service(win32serviceutil.ServiceFramework):
 
 
 if __name__ == "__main__":
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    fh = logging.FileHandler("console.log")
+    fh.setLevel(logging.ERROR)
+    formatter = "[%(asctime)s file:%(name)s line:%(lineno)s]%(levelname)s: %(message)s"
+    datefmt = "%m/%d/%Y %H:%M:%S"
+    logging.basicConfig(handlers=(ch, fh), datefmt=datefmt, format=formatter, level=logging.INFO)
+
     if len(sys.argv) == 1:
         servicemanager.Initialize()
         servicemanager.PrepareToHostSingle(Service)
