@@ -34,7 +34,7 @@ class MemoriaListener(pubsub.Listener):
     def update(self, context):
         config = get_config()
         if not isinstance(context, psutil._pswindows.svmem):
-            return logging.error("MemoriaManager: Contexto Invalido")
+            return logging.error(f"MemoriaManager: Contexto Invalido - {context}")
 
         self.memoria_log.append(context.percent)
         log_length = len(self.memoria_log)
