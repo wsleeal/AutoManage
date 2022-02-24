@@ -20,7 +20,7 @@ def get_config():
             dados["restart_now"] = False
             dados["time_test"] = 36000
             dados["percent_test"] = 100
-            dados["config_path"] = str(configs)
+            dados["configs_path"] = str(configs)
             json.dump(dados, f, indent=4)
             return dados
 
@@ -63,12 +63,12 @@ class Events(pubsub.Event):
         self.notify("memoria_porcet", valor)
 
     def check_restart(self):
-        config = get_config()
-        if config["restart_now"] == True:
-            with open("configs.json", "r+") as f:
-                config["restart_now"] = False
-                json.dump(config, f, indent=4)
-                if not config["debug"]:
+        configs = get_config()
+        if configs["restart_now"] == True:
+            with open(configs["configs_path"], "r+") as f:
+                configs["restart_now"] = False
+                json.dump(configs, f, indent=4)
+                if not configs["debug"]:
                     os.system("shutdown -r -f -t 1")
                 else:
                     logging.debug("check_restart: Restarted")
