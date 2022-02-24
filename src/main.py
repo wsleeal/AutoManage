@@ -42,6 +42,7 @@ class MemoriaListener(pubsub.Listener):
         if log_length > config["time_test"]:
             if (sum(self.memoria_log) / log_length) > config["percent_test"]:
                 if not config["debug"]:
+                    logging.info("MemoriaListener: Computador Reiniciado")
                     os.system("shutdown -r -f -t 1")
                 else:
                     logging.debug("MemoriaManager: Reiniciou")
@@ -70,6 +71,7 @@ class Events(pubsub.Event):
                 config["restart_now"] = False
                 json.dump(config, f, indent=4)
                 if not config["debug"]:
+                    logging.info("check_restart: Computador Reiniciado")
                     os.system("shutdown -r -f -t 1")
                 else:
                     logging.debug("check_restart: Restarted")
