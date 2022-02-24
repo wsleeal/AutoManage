@@ -2,6 +2,7 @@ import logging
 import socket
 import sys
 import time
+from pathlib import Path
 
 import psutil
 import servicemanager
@@ -40,7 +41,7 @@ class Service(win32serviceutil.ServiceFramework):
         main.MemoriaListener(broker)
         eventos = main.Events(broker)
         while not self.stopped:
-            eventos.memoria_porcent = psutil.virtual_memory()
+            eventos.memoria_status = psutil.virtual_memory()
             eventos.check_restart()
             time.sleep(1)
 
@@ -48,15 +49,18 @@ class Service(win32serviceutil.ServiceFramework):
 if __name__ == "__main__":
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
-    fh = logging.FileHandler("console.log")
-    fh.setLevel(logging.ERROR)
+    fh = logging.FileHandler(Path(Path(__file__).parent.parent, "console.log"))
+    fh.setLevel(logging.INFO)
     formatter = "[%(asctime)s file:%(name)s line:%(lineno)s]%(levelname)s: %(message)s"
     datefmt = "%m/%d/%Y %H:%M:%S"
-    logging.basicConfig(handlers=(ch, fh), datefmt=datefmt, format=formatter, level=logging.INFO)
+    logging.basicConfig(handlers=(ch, fh), datefmt=datefmt, format=formatter, level=logging.DEBUG)
 
-    if len(sys.argv) == 1:
-        servicemanager.Initialize()
-        servicemanager.PrepareToHostSingle(Service)
-        servicemanager.StartServiceCtrlDispatcher()
-    else:
-        win32serviceutil.HandleCommandLine(Service)
+    try:
+        if len(sys.argv) == 1:
+            servicemanager.Initialize()
+            servicemanager.PrepareToHostSingle(Service)
+            servicemanager.StartServiceCtrlDispatcher()
+        else:
+            win32serviceutil.HandleCommandLine(Service)
+    except:
+        raise logging.exception("")

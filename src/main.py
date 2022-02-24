@@ -9,25 +9,26 @@ import pubsub
 
 
 def get_config():
-    configs = Path(Path(__file__).parent, "configs.json")
-    if configs.exists():
-        with open(configs, "r") as f:
+    config = Path(Path(__file__).parent.parent, "config.json")
+    if config.exists():
+        with open(config, "r") as f:
             return json.loads(f.read())
     else:
-        with open(configs, "w") as f:
+        with open(config, "w") as f:
             dados = dict()
             dados["debug"] = True
             dados["restart_now"] = False
             dados["time_test"] = 36000
             dados["percent_test"] = 100
-            dados["configs_path"] = str(configs)
+            dados["config_path"] = str(config)
             json.dump(dados, f, indent=4)
+            logging.info("Config.json Criado")
             return dados
 
 
 class MemoriaListener(pubsub.Listener):
     def __init__(self, broker: "pubsub.Broker") -> None:
-        super().__init__("memoria_porcet", broker)
+        super().__init__("memoria_status", broker)
         self.memoria_log = list()
 
     def update(self, context):
@@ -48,44 +49,40 @@ class MemoriaListener(pubsub.Listener):
 
 
 class Events(pubsub.Event):
-    _memoria_porcent = None
+    _memoria_status = None
 
     def __init__(self, broker: "pubsub.Broker") -> None:
         super().__init__(broker)
 
     @property
-    def memoria_porcent(self):
-        return self._memoria_porcent
+    def memoria_status(self):
+        return self._memoria_status
 
-    @memoria_porcent.setter
-    def memoria_porcent(self, valor):
-        self._memoria_porcent = valor
-        self.notify("memoria_porcet", valor)
+    @memoria_status.setter
+    def memoria_status(self, valor):
+        self._memoria_status = valor
+        self.notify("memoria_status", valor)
 
     def check_restart(self):
-        configs = get_config()
-        if configs["restart_now"] == True:
-            with open(configs["configs_path"], "r+") as f:
-                configs["restart_now"] = False
-                json.dump(configs, f, indent=4)
-                if not configs["debug"]:
+        config = get_config()
+        if config["restart_now"] == True:
+            with open(config["config_path"], "r+") as f:
+                config["restart_now"] = False
+                json.dump(config, f, indent=4)
+                if not config["debug"]:
                     os.system("shutdown -r -f -t 1")
                 else:
                     logging.debug("check_restart: Restarted")
 
 
 if __name__ == "__main__":
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-    fh = logging.FileHandler("console.log")
-    fh.setLevel(logging.ERROR)
-    formatter = "[%(asctime)s file:%(name)s line:%(lineno)s]%(levelname)s: %(message)s"
-    datefmt = "%m/%d/%Y %H:%M:%S"
-    logging.basicConfig(handlers=(ch, fh), datefmt=datefmt, format=formatter, level=logging.DEBUG)
+
+    logging.basicConfig(level=logging.DEBUG)
 
     broker = pubsub.Broker()
-    memoria_manager = MemoriaListener(broker)
+    MemoriaListener(broker)
+
     eventos = Events(broker)
 
-    eventos.memoria_porcent = psutil.virtual_memory()
+    eventos.memoria_status = psutil.virtual_memory()
     eventos.check_restart()
