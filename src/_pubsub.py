@@ -26,11 +26,8 @@ class Listener:
     def __init__(self, broker: "Broker") -> None:
         self.broker = broker
 
-    def setTopic(self, topic: str):
+    def onEvent(self, topic: str, callback):
         self.broker.add_listener(topic, self)
-
-    def addListener(self, topic: str, callback):
-        self.setTopic(topic)
         self.update = callback
 
     def update(self, context):
